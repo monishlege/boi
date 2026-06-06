@@ -14,24 +14,29 @@ function App() {
   const [selectedAccount, setSelectedAccount] = useState(null)
   const wsRef = useRef(null)
 
-  // Use Vite proxy for API calls, but direct WebSocket connection to backend
-  const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+  // Use direct backend connection in development
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://127.0.0.1:8000' : '/api')
+  console.log("API_BASE_URL:", API_BASE_URL);
   // In dev, connect directly to backend WebSocket
   const WS_URL = import.meta.env.VITE_WS_URL || (import.meta.env.DEV 
     ? 'ws://127.0.0.1:8000/ws/alerts' 
-    : `${import.meta.env.VITE_API_URL?.replace('https', 'wss').replace('http', 'ws')}/ws/alerts`)
+    : `${import.meta.env.VITE_API_BASE_URL?.replace('https', 'wss').replace('http', 'ws')}/ws/alerts`)
 
   const fetchHighRiskAccounts = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch(`${API_BASE_URL}/high-risk-accounts`, {
+      const url = `${API_BASE_URL}/high-risk-accounts`
+      console.log("fetching high-risk accounts from:", url)
+      const response = await fetch(url, {
         headers: { 'Accept': 'application/json' },
       })
+      console.log("response:", response)
       const data = await response.json()
+      console.log("data:", data)
       setHighRiskAccounts(data)
       setFetchError(null)
     } catch (e) {
-      console.error('Error fetching high risk accounts:', e)
+      console.error("Error fetching high risk accounts:", e)
       setFetchError(e.message)
     } finally {
       setIsLoading(false)
@@ -40,13 +45,15 @@ function App() {
 
   const fetchFeatureImportance = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/model/feature-importance`)
+      const url = `${API_BASE_URL}/model/feature-importance`
+      console.log("fetching feature importance from:", url)
+      const response = await fetch(url)
       const data = await response.json()
-      if (data.status === 'success') {
+      if (data.status === "success") {
         setFeatureImportance(data.feature_importance)
       }
     } catch (e) {
-      console.error('Error fetching feature importance:', e)
+      console.error("Error fetching feature importance:", e)
     }
   }
 
