@@ -200,7 +200,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 await asyncio.sleep(3)
             except Exception as e:
                 print(f"WebSocket send error: {e}")
-                await asyncio.sleep(1)  # Wait before retrying
+                break  # Exit loop if send fails (connection closed)
     except WebSocketDisconnect:
         print("WebSocket client disconnected")
     except Exception as e:
