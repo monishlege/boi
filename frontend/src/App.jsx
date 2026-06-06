@@ -116,8 +116,9 @@ function App() {
       };
 
       ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
-        ws.close();
+        console.error("WebSocket full error details:", error);
+        console.error("WebSocket error event:", JSON.stringify(error, null, 2));
+        // Don't close on error - let onclose handle reconnection
       };
     };
 

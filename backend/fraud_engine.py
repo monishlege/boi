@@ -7,12 +7,15 @@ high_risk_accounts = []
 
 def calculate_entropy_score():
     try:
-        # Use AI model for prediction, but boost some scores for critical alerts
-        ai_score = fraud_model.predict_fraud_probability()
+        # Skip slow AI prediction for WebSocket speed - use random with critical alert chance
         # 30% chance to return a high score for testing
         if random.random() < 0.3:
             return random.uniform(0.85, 1.0)
-        return ai_score
+        velocity = random.uniform(0, 1)
+        behavioral_rhythm = random.uniform(0, 1)
+        regulatory_blacklist = random.uniform(0, 1)
+        score = (velocity * 0.4) + (behavioral_rhythm * 0.35) + (regulatory_blacklist * 0.25)
+        return min(max(score, 0.0), 1.0)
     except Exception as e:
         print(f"AI prediction failed, using fallback: {e}")
         # Fallback to original method with high chance of critical alerts

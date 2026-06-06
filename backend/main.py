@@ -194,13 +194,17 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     try:
         while True:
-            alert = generate_alert()
-            await websocket.send_json(alert)
-            await asyncio.sleep(3)
+            try:
+                alert = generate_alert()
+                await websocket.send_json(alert)
+                await asyncio.sleep(3)
+            except Exception as e:
+                print(f"WebSocket send error: {e}")
+                await asyncio.sleep(1)  # Wait before retrying
     except WebSocketDisconnect:
-        pass
-    except Exception:
-        pass
+        print("WebSocket client disconnected")
+    except Exception as e:
+        print(f"WebSocket general error: {e}")
 
 if __name__ == "__main__":
     import uvicorn

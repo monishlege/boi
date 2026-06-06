@@ -33,15 +33,19 @@ class FraudDetectionModel:
         self.imputer = None
         self.feature_columns = None
         self.is_trained = False
+        self.cached_df = None  # Cache dataset to avoid reloading every time
         
         # Try to load existing model on initialization
         self.load_model()
 
     def load_dataset(self):
-        """Load and prepare the dataset"""
+        """Load and prepare the dataset (with caching)"""
+        if self.cached_df is not None:
+            return self.cached_df
         print("Loading dataset...")
         df = pd.read_csv(DATASET_PATH)
         print(f"Dataset loaded: {df.shape[0]} rows, {df.shape[1]} columns")
+        self.cached_df = df
         return df
 
     def preprocess_data(self, df, is_training=True):
