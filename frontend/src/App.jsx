@@ -14,9 +14,12 @@ function App() {
   const [selectedAccount, setSelectedAccount] = useState(null)
   const wsRef = useRef(null)
 
-  // Use Vite proxy for all backend calls in dev, or full URL in production
+  // Use Vite proxy for API calls, but direct WebSocket connection to backend
   const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
-  const WS_URL = import.meta.env.VITE_WS_URL || (import.meta.env.DEV ? 'ws://localhost:5174/ws/alerts' : `${import.meta.env.VITE_API_URL?.replace('https', 'ws').replace('http', 'ws')}/ws/alerts`)
+  // In dev, connect directly to backend WebSocket
+  const WS_URL = import.meta.env.VITE_WS_URL || (import.meta.env.DEV 
+    ? 'ws://127.0.0.1:8000/ws/alerts' 
+    : `${import.meta.env.VITE_API_URL?.replace('https', 'wss').replace('http', 'ws')}/ws/alerts`)
 
   const fetchHighRiskAccounts = async () => {
     setIsLoading(true)
@@ -74,32 +77,52 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const connect = () => {
-      const ws = new WebSocket(WS_URL)
-      wsRef.current = ws
+    let reconnectTimeout;
 
-      ws.onopen = () => setConnected(true)
+    const connect = () => {
+      // Clean up any existing connection first
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+
+      const ws = new WebSocket(WS_URL);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        console.log("WebSocket connected");
+        setConnected(true);
+      };
 
       ws.onmessage = (event) => {
-        const data = JSON.parse(event.data)
-        setLastScore(data.score)
-        setAlerts((prev) => [data, ...prev].slice(0, 20))
-      }
+        try {
+          const data = JSON.parse(event.data);
+          setLastScore(data.score);
+          setAlerts((prev) => [data, ...prev].slice(0, 20));
+        } catch (e) {
+          console.error("Error parsing WebSocket message:", e);
+        }
+      };
 
-      ws.onclose = () => {
-        setConnected(false)
-        setTimeout(connect, 3000)
-      }
+      ws.onclose = (event) => {
+        console.log("WebSocket closed, reconnecting...", event);
+        setConnected(false);
+        // Reconnect with exponential backoff
+        reconnectTimeout = setTimeout(connect, 3000);
+      };
 
-      ws.onerror = () => ws.close()
-    }
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        ws.close();
+      };
+    };
 
-    connect()
+    connect();
 
     return () => {
-      if (wsRef.current) wsRef.current.close()
-    }
-  }, [])
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      if (wsRef.current) wsRef.current.close();
+    };
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
