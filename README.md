@@ -75,23 +75,43 @@ BOI/
 
 ## Deployment Steps
 
-### Backend Deployment on Render
+### Important: DataSet.csv
+The `DataSet.csv` file is too large for GitHub and is not included in the repo. You'll need to:
+1. Upload it to your Render instance separately OR
+2. Use Render's "Disk" feature to persist it OR
+3. Update the ai_model.py to load data from another source
 
+### Backend Deployment on Render
+We've already created `render.yaml` for auto-deployment!
+
+1. **Go to Render > New > Blueprint**
+2. **Connect your GitHub repository**
+3. **Deploy!**
+
+Or manually:
 1. **Create a new Web Service** on Render
 2. **Connect your repository**
 3. **Configure the service**:
+   - Root Directory: `backend`
    - Build Command: `pip install -r requirements.txt`
-   - Start Command: `python -m uvicorn main:app --host 0.0.0.0 --port $PORT`
-4. **Add Environment Variables**:
-   - `PORT`: 10000 (Render's default)
+   - Start Command: `python main.py`
+4. **Add Environment Variables** (optional):
    - `FRONTEND_URL`: Your Vercel production URL (e.g., `https://ciphervault-ai.vercel.app`)
 
 ### Frontend Deployment on Vercel
+We've already created `vercel.json` for auto-deployment!
 
 1. **Import your project** on Vercel
 2. **Configure Environment Variables**:
-   - `VITE_API_BASE_URL`: Your Render backend URL (e.g., `https://ciphervault-ai-backend.onrender.com`)
+   - `VITE_API_URL`: Your Render backend URL (e.g., `https://ciphervault-ai-backend.onrender.com`)
+   - `VITE_WS_URL`: Your Render backend WebSocket URL (e.g., `wss://ciphervault-ai-backend.onrender.com/ws/alerts`)
 3. **Deploy!**
+
+### After Deployment
+1. Once your Render backend is deployed, update:
+   - `frontend/.env.production` with your actual backend URL
+   - `vercel.json` with your actual backend URL
+   - And commit these changes!
 
 ## Local Development
 

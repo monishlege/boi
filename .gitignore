@@ -36,3 +36,9 @@ Thumbs.db
 *.pkl
 *.pickle
 DataSet.csv
+test_endpoints.py
+
+# Environment variables (keep .env.example)
+frontend/.env
+frontend/.env.local
+frontend/.env.production

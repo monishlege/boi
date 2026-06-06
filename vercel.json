@@ -1,0 +1,9 @@
+{
+  "framework": "vite",
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/dist",
+  "env": {
+    "VITE_API_URL": "https://your-render-backend-url.onrender.com",
+    "VITE_WS_URL": "wss://your-render-backend-url.onrender.com/ws/alerts"
+  }
+}

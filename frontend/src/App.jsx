@@ -14,9 +14,9 @@ function App() {
   const [selectedAccount, setSelectedAccount] = useState(null)
   const wsRef = useRef(null)
 
-  // Use Vite proxy for all backend calls
-  const API_BASE_URL = '/api'
-  const WS_URL = 'ws://localhost:5174/ws/alerts'
+  // Use Vite proxy for all backend calls in dev, or full URL in production
+  const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+  const WS_URL = import.meta.env.VITE_WS_URL || (import.meta.env.DEV ? 'ws://localhost:5174/ws/alerts' : `${import.meta.env.VITE_API_URL?.replace('https', 'ws').replace('http', 'ws')}/ws/alerts`)
 
   const fetchHighRiskAccounts = async () => {
     setIsLoading(true)
