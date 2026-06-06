@@ -14,13 +14,11 @@ function App() {
   const [selectedAccount, setSelectedAccount] = useState(null)
   const wsRef = useRef(null)
 
-  // Use direct backend connection in development
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://127.0.0.1:8000' : '/api')
+  // Force direct backend connection in development mode
+  const API_BASE_URL = 'http://127.0.0.1:8000'
   console.log("API_BASE_URL:", API_BASE_URL);
   // In dev, connect directly to backend WebSocket
-  const WS_URL = import.meta.env.VITE_WS_URL || (import.meta.env.DEV 
-    ? 'ws://127.0.0.1:8000/ws/alerts' 
-    : `${import.meta.env.VITE_API_BASE_URL?.replace('https', 'wss').replace('http', 'ws')}/ws/alerts`)
+  const WS_URL = 'ws://127.0.0.1:8000/ws/alerts'
 
   const fetchHighRiskAccounts = async () => {
     setIsLoading(true)
