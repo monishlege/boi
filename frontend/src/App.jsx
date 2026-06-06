@@ -70,6 +70,8 @@ function App() {
 
   // Fetch high risk accounts periodically
   useEffect(() => {
+    // Clear old alerts on start to remove stale data
+    setAlerts([])
     fetchHighRiskAccounts()
     fetchFeatureImportance()
     const interval = setInterval(fetchHighRiskAccounts, 10000)
