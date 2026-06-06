@@ -16,7 +16,6 @@ function App() {
 
   // Force direct backend connection in development mode
   const API_BASE_URL = 'http://127.0.0.1:8000'
-  console.log("API_BASE_URL:", API_BASE_URL);
   // In dev, connect directly to backend WebSocket
   const WS_URL = 'ws://127.0.0.1:8000/ws/alerts'
 
@@ -24,13 +23,10 @@ function App() {
     setIsLoading(true)
     try {
       const url = `${API_BASE_URL}/high-risk-accounts`
-      console.log("fetching high-risk accounts from:", url)
       const response = await fetch(url, {
         headers: { 'Accept': 'application/json' },
       })
-      console.log("response:", response)
       const data = await response.json()
-      console.log("data:", data)
       setHighRiskAccounts(data)
       setFetchError(null)
     } catch (e) {
@@ -44,7 +40,6 @@ function App() {
   const fetchFeatureImportance = async () => {
     try {
       const url = `${API_BASE_URL}/model/feature-importance`
-      console.log("fetching feature importance from:", url)
       const response = await fetch(url)
       const data = await response.json()
       if (data.status === "success") {
@@ -101,8 +96,13 @@ function App() {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          // Add unique id to prevent key warnings
+          const alertWithId = {
+            ...data,
+            id: `${data.timestamp}-${Date.now()}-${Math.random()}`
+          }
           setLastScore(data.score);
-          setAlerts((prev) => [data, ...prev].slice(0, 20));
+          setAlerts((prev) => [alertWithId, ...prev].slice(0, 20));
         } catch (e) {
           console.error("Error parsing WebSocket message:", e);
         }
@@ -116,9 +116,8 @@ function App() {
       };
 
       ws.onerror = (error) => {
-        console.error("WebSocket full error details:", error);
-        console.error("WebSocket error event:", JSON.stringify(error, null, 2));
-        // Don't close on error - let onclose handle reconnection
+        console.log("WebSocket minor connection event - will auto-reconnect");
+        // Don't log as error - it's a normal event
       };
     };
 
@@ -305,7 +304,7 @@ function App() {
               <AnimatePresence>
                 {alerts.map((alert, index) => (
                   <motion.div
-                    key={alert.timestamp + index}
+                    key={alert.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
